@@ -5,6 +5,15 @@ export type Entry = {
   renamedFrom?: string;
 };
 
+const TRACKED_CODES = new Set(["M", "A", "D", "R", "C", "T", "U"]);
+
+export function filterTracked(entries: Entry[]): Entry[] {
+  return entries.filter(
+    (e) =>
+      TRACKED_CODES.has(e.indexStatus) || TRACKED_CODES.has(e.worktreeStatus),
+  );
+}
+
 export function parsePorcelain(bytes: Uint8Array): Entry[] {
   const text = new TextDecoder().decode(bytes);
   if (text.length === 0) return [];

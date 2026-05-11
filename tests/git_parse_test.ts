@@ -1,5 +1,6 @@
 import { assertEquals } from "@std/assert";
-import { parsePorcelain } from "../src/git.ts";
+import { filterTracked, parsePorcelain } from "../src/git.ts";
+import type { Entry } from "../src/git.ts";
 
 const enc = (s: string) => new TextEncoder().encode(s);
 
@@ -73,4 +74,32 @@ Deno.test("parsePorcelain: rename followed by another entry", () => {
     },
     { indexStatus: " ", worktreeStatus: "M", path: "src/other.ts" },
   ]);
+});
+
+Deno.test("filterTracked: drops untracked (??)", () => {
+  const entries = parsePorcelain(enc("?? new.txt\0 M tracked.ts\0"));
+  assertEquals(filterTracked(entries), [
+    { indexStatus: " ", worktreeStatus: "M", path: "tracked.ts" },
+  ]);
+});
+
+Deno.test("filterTracked: drops ignored (!!)", () => {
+  const entries = parsePorcelain(enc("!! ignored.log\0M  staged.ts\0"));
+  assertEquals(filterTracked(entries), [
+    { indexStatus: "M", worktreeStatus: " ", path: "staged.ts" },
+  ]);
+});
+
+Deno.test("filterTracked: keeps every tracked status code", () => {
+  const codes = ["M", "A", "D", "R", "C", "T", "U"];
+  for (const code of codes) {
+    const entries: Entry[] = [
+      { indexStatus: code, worktreeStatus: " ", path: "x" },
+    ];
+    assertEquals(filterTracked(entries).length, 1, `kept index=${code}`);
+    const entries2: Entry[] = [
+      { indexStatus: " ", worktreeStatus: code, path: "x" },
+    ];
+    assertEquals(filterTracked(entries2).length, 1, `kept worktree=${code}`);
+  }
 });

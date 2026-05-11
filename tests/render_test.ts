@@ -66,3 +66,18 @@ Deno.test("renderFrame: no SGR escapes when colorEnabled=false", () => {
   const out = renderFrame([e("M", "M", "a.ts"), e(" ", "M", "b.ts")], 0, 80, false);
   assertEquals(/\x1b\[\d+m/.test(out), false);
 });
+
+Deno.test("renderFrame: long path truncated with ellipsis when narrow", () => {
+  const longPath = "a/very/deeply/nested/file/path/that/is/quite/long.ts";
+  const out = renderFrame([e(" ", "M", longPath)], 0, 30, false);
+  const entryLine = out.split("\n").find((l) => l.includes("[1]"))!;
+  assertEquals(entryLine.length <= 30, true, `line is "${entryLine}" len=${entryLine.length}`);
+  assertStringIncludes(entryLine, "…");
+});
+
+Deno.test("renderFrame: short path not truncated", () => {
+  const out = renderFrame([e(" ", "M", "x.ts")], 0, 30, false);
+  const entryLine = out.split("\n").find((l) => l.includes("[1]"))!;
+  assertEquals(entryLine.includes("…"), false);
+  assertStringIncludes(entryLine, "x.ts");
+});

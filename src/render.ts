@@ -21,24 +21,35 @@ function statusCell(entry: Entry, colorEnabled: boolean): string {
   return idx + wt;
 }
 
+function truncate(s: string, max: number): string {
+  if (max <= 0) return "";
+  if (s.length <= max) return s;
+  if (max === 1) return "…";
+  return s.slice(0, max - 1) + "…";
+}
+
 export function renderFrame(
   entries: Entry[],
   cursorIndex: number,
-  _width: number,
+  width: number,
   colorEnabled: boolean,
 ): string {
   const lines: string[] = [];
   lines.push(`modified files (${entries.length})`);
   lines.push("");
 
+  const prefixCols = 9;
+
   for (let i = 0; i < entries.length; i++) {
     const entry = entries[i];
     const cursor = i === cursorIndex ? "> " : "  ";
     const badge = i < 9 ? `[${i + 1}]` : "[ ]";
     const status = statusCell(entry, colorEnabled);
-    const path = entry.renamedFrom
+    const rawPath = entry.renamedFrom
       ? `${entry.renamedFrom} → ${entry.path}`
       : entry.path;
+    const pathBudget = Math.max(0, width - prefixCols);
+    const path = truncate(rawPath, pathBudget);
     lines.push(`${cursor}${badge} ${status} ${path}`);
   }
 

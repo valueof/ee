@@ -35,3 +35,42 @@ Deno.test("parsePorcelain: path with embedded space", () => {
     { indexStatus: " ", worktreeStatus: "M", path: "src/a b.ts" },
   ]);
 });
+
+Deno.test("parsePorcelain: rename pair (R in index)", () => {
+  const out = parsePorcelain(enc("R  src/new.ts\0src/old.ts\0"));
+  assertEquals(out, [
+    {
+      indexStatus: "R",
+      worktreeStatus: " ",
+      path: "src/new.ts",
+      renamedFrom: "src/old.ts",
+    },
+  ]);
+});
+
+Deno.test("parsePorcelain: copy pair (C in index)", () => {
+  const out = parsePorcelain(enc("C  src/copy.ts\0src/orig.ts\0"));
+  assertEquals(out, [
+    {
+      indexStatus: "C",
+      worktreeStatus: " ",
+      path: "src/copy.ts",
+      renamedFrom: "src/orig.ts",
+    },
+  ]);
+});
+
+Deno.test("parsePorcelain: rename followed by another entry", () => {
+  const out = parsePorcelain(
+    enc("R  src/new.ts\0src/old.ts\0 M src/other.ts\0"),
+  );
+  assertEquals(out, [
+    {
+      indexStatus: "R",
+      worktreeStatus: " ",
+      path: "src/new.ts",
+      renamedFrom: "src/old.ts",
+    },
+    { indexStatus: " ", worktreeStatus: "M", path: "src/other.ts" },
+  ]);
+});

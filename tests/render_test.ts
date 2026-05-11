@@ -41,3 +41,28 @@ Deno.test("renderFrame: footer present", () => {
   assertStringIncludes(out, "↑/↓ or j/k");
   assertStringIncludes(out, "q quit");
 });
+
+const FG_GREEN = "\x1b[32m";
+const FG_RED = "\x1b[31m";
+const FG_YELLOW = "\x1b[33m";
+const RESET = "\x1b[0m";
+
+Deno.test("renderFrame: staged status painted green when color enabled", () => {
+  const out = renderFrame([e("M", " ", "a.ts")], 0, 80, true);
+  assertStringIncludes(out, `${FG_GREEN}M${RESET}`);
+});
+
+Deno.test("renderFrame: unstaged status painted red when color enabled", () => {
+  const out = renderFrame([e(" ", "M", "a.ts")], 0, 80, true);
+  assertStringIncludes(out, `${FG_RED}M${RESET}`);
+});
+
+Deno.test("renderFrame: both staged + unstaged painted yellow", () => {
+  const out = renderFrame([e("M", "M", "a.ts")], 0, 80, true);
+  assertStringIncludes(out, `${FG_YELLOW}MM${RESET}`);
+});
+
+Deno.test("renderFrame: no SGR escapes when colorEnabled=false", () => {
+  const out = renderFrame([e("M", "M", "a.ts"), e(" ", "M", "b.ts")], 0, 80, false);
+  assertEquals(/\x1b\[\d+m/.test(out), false);
+});

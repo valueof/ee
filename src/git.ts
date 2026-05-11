@@ -14,6 +14,38 @@ export function filterTracked(entries: Entry[]): Entry[] {
   );
 }
 
+export async function findRepoRoot(cwd: string = Deno.cwd()): Promise<string> {
+  const cmd = new Deno.Command("git", {
+    args: ["rev-parse", "--show-toplevel"],
+    cwd,
+    stdout: "piped",
+    stderr: "piped",
+  });
+  const { code, stdout, stderr } = await cmd.output();
+  if (code !== 0) {
+    throw new Error(
+      `not a git repository: ${new TextDecoder().decode(stderr).trim()}`,
+    );
+  }
+  return new TextDecoder().decode(stdout).trimEnd();
+}
+
+export async function listChanges(repoRoot: string): Promise<Entry[]> {
+  const cmd = new Deno.Command("git", {
+    args: ["status", "--porcelain=v1", "-z"],
+    cwd: repoRoot,
+    stdout: "piped",
+    stderr: "piped",
+  });
+  const { code, stdout, stderr } = await cmd.output();
+  if (code !== 0) {
+    throw new Error(
+      `git status failed: ${new TextDecoder().decode(stderr).trim()}`,
+    );
+  }
+  return filterTracked(parsePorcelain(stdout));
+}
+
 export function parsePorcelain(bytes: Uint8Array): Entry[] {
   const text = new TextDecoder().decode(bytes);
   if (text.length === 0) return [];

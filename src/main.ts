@@ -5,9 +5,9 @@ import * as app from "./app.ts";
 const VERSION = "0.1.0";
 
 function help(): void {
-  console.log(`git-ed v${VERSION}
+  console.log(`ee ${VERSION}
 
-Usage: git-ed
+Usage: ee
 
 A TUI that lists tracked git changes (staged + unstaged) and opens the
 selected file in your editor.
@@ -47,7 +47,7 @@ async function main(): Promise<number> {
   try {
     repoRoot = await git.findRepoRoot();
   } catch {
-    console.error("git-ed: not a git repository");
+    console.error("ee: not a git repository");
     return 1;
   }
 
@@ -74,7 +74,7 @@ if (import.meta.main) {
     Deno.exit(code);
   } catch (err) {
     tui.exit();
-    console.error("git-ed:", err instanceof Error ? err.message : String(err));
+    console.error("ee:", err instanceof Error ? err.message : String(err));
     Deno.exit(1);
   }
 }

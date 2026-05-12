@@ -1,4 +1,4 @@
-# git-ed — Design
+# ee — Design
 
 Date: 2026-05-11
 
@@ -38,7 +38,7 @@ opens the selected file in `$EDITOR` on a keypress.
 - **Language:** TypeScript.
 - **Runtime:** Deno.
 - **Distribution:** `deno compile` → single static binary, installed to
-  `$HOME/.local/bin/git-ed` via a `deno task install` task.
+  `$HOME/.local/bin/ee` via a `deno task install` task.
 - **TUI:** rolled by hand using raw mode + ANSI escape sequences. No TUI
   framework dependency.
 
@@ -145,7 +145,7 @@ Resolves and runs the user's editor.
   calls `tui.exit()`, spawns the editor with stdio inherited, awaits exit,
   calls `tui.enter()`. Always restores TUI state, even if the child crashes.
 
-The editor's exit code is discarded; git-ed's exit code reflects git-ed
+The editor's exit code is discarded; ee's exit code reflects ee
 itself, not the editor.
 
 ### `src/app.ts`
@@ -243,7 +243,7 @@ Entry point. Responsibilities:
 ### Project layout
 
 ```
-git-ed/
+ee/
 ├─ deno.json
 ├─ src/
 │  ├─ main.ts
@@ -265,9 +265,9 @@ git-ed/
 - `dev` — `deno run --allow-run --allow-env --allow-read src/main.ts`
 - `test` — `deno test`
 - `build` — `deno compile --allow-run --allow-env --allow-read
-  --output dist/git-ed src/main.ts`
-- `install` — runs `build`, then copies `dist/git-ed` to
-  `$HOME/.local/bin/git-ed` and `chmod +x`.
+  --output dist/ee src/main.ts`
+- `install` — runs `build`, then copies `dist/ee` to
+  `$HOME/.local/bin/ee` and `chmod +x`.
 
 ### Permissions
 

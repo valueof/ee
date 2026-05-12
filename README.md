@@ -1,4 +1,4 @@
-# git-ed
+# ee
 
 A tiny TUI that lists tracked git changes and opens the selected file in
 your editor — replacing the `git status` + open-in-editor + find-file dance
@@ -10,11 +10,11 @@ Requires [Deno](https://deno.com).
 
 ```
 git clone <this repo>
-cd git-ed
+cd ee
 deno task install
 ```
 
-This compiles a static binary to `$HOME/.local/bin/git-ed`. Make sure
+This compiles a static binary to `$HOME/.local/bin/ee`. Make sure
 `~/.local/bin` is on your `PATH`.
 
 ## Usage
@@ -22,7 +22,7 @@ This compiles a static binary to `$HOME/.local/bin/git-ed`. Make sure
 In a git repo:
 
 ```
-git-ed
+ee
 ```
 
 Keys:
@@ -60,5 +60,5 @@ The compiled binary requires `--allow-run` unrestricted (rather than
 ```
 deno task test       # run all tests
 deno task dev        # run from source
-deno task build      # produce dist/git-ed
+deno task build      # produce dist/ee
 ```

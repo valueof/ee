@@ -3,7 +3,7 @@ export function resolveEditor(env: Record<string, string | undefined>): string {
   if (visual) return visual;
   const editor = (env.EDITOR ?? "").trim();
   if (editor) return editor;
-  throw new Error("Set $EDITOR or $VISUAL to use git-ed");
+  throw new Error("Set $EDITOR or $VISUAL to use ee");
 }
 
 export type TuiHandle = {

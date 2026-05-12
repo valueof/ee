@@ -10,7 +10,7 @@ async function run(cwd: string, ...args: string[]) {
 }
 
 async function setupRepo(): Promise<string> {
-  const dir = await Deno.makeTempDir({ prefix: "git-ed-test-" });
+  const dir = await Deno.makeTempDir({ prefix: "ee-test-" });
   await run(dir, "init", "-b", "main");
   await run(dir, "config", "user.email", "test@example.com");
   await run(dir, "config", "user.name", "Test");
@@ -29,7 +29,7 @@ Deno.test("findRepoRoot: returns toplevel from subdirectory", async () => {
 });
 
 Deno.test("findRepoRoot: rejects when not in a repo", async () => {
-  const dir = await Deno.makeTempDir({ prefix: "git-ed-norepo-" });
+  const dir = await Deno.makeTempDir({ prefix: "ee-norepo-" });
   try {
     await assertRejects(() => findRepoRoot(dir));
   } finally {

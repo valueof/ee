@@ -1,5 +1,5 @@
 import { assertEquals } from "@std/assert";
-import { filterTracked, parsePorcelain } from "../src/git.ts";
+import { filterEditable, parsePorcelain } from "../src/git.ts";
 import type { Entry } from "../src/git.ts";
 
 const enc = (s: string) => new TextEncoder().encode(s);
@@ -76,30 +76,31 @@ Deno.test("parsePorcelain: rename followed by another entry", () => {
   ]);
 });
 
-Deno.test("filterTracked: drops untracked (??)", () => {
+Deno.test("filterEditable: keeps untracked (??)", () => {
   const entries = parsePorcelain(enc("?? new.txt\0 M tracked.ts\0"));
-  assertEquals(filterTracked(entries), [
+  assertEquals(filterEditable(entries), [
+    { indexStatus: "?", worktreeStatus: "?", path: "new.txt" },
     { indexStatus: " ", worktreeStatus: "M", path: "tracked.ts" },
   ]);
 });
 
-Deno.test("filterTracked: drops ignored (!!)", () => {
+Deno.test("filterEditable: drops ignored (!!)", () => {
   const entries = parsePorcelain(enc("!! ignored.log\0M  staged.ts\0"));
-  assertEquals(filterTracked(entries), [
+  assertEquals(filterEditable(entries), [
     { indexStatus: "M", worktreeStatus: " ", path: "staged.ts" },
   ]);
 });
 
-Deno.test("filterTracked: keeps every tracked status code", () => {
-  const codes = ["M", "A", "D", "R", "C", "T", "U"];
+Deno.test("filterEditable: keeps every editable status code", () => {
+  const codes = ["M", "A", "D", "R", "C", "T", "U", "?"];
   for (const code of codes) {
     const entries: Entry[] = [
       { indexStatus: code, worktreeStatus: " ", path: "x" },
     ];
-    assertEquals(filterTracked(entries).length, 1, `kept index=${code}`);
+    assertEquals(filterEditable(entries).length, 1, `kept index=${code}`);
     const entries2: Entry[] = [
       { indexStatus: " ", worktreeStatus: code, path: "x" },
     ];
-    assertEquals(filterTracked(entries2).length, 1, `kept worktree=${code}`);
+    assertEquals(filterEditable(entries2).length, 1, `kept worktree=${code}`);
   }
 });

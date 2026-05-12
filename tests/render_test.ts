@@ -62,6 +62,11 @@ Deno.test("renderFrame: both staged + unstaged painted yellow", () => {
   assertStringIncludes(out, `${FG_YELLOW}MM${RESET}`);
 });
 
+Deno.test("renderFrame: untracked (??) painted red, not yellow", () => {
+  const out = renderFrame([e("?", "?", "new.txt")], 0, 80, true);
+  assertStringIncludes(out, `${FG_RED}??${RESET}`);
+});
+
 Deno.test("renderFrame: no SGR escapes when colorEnabled=false", () => {
   const out = renderFrame([e("M", "M", "a.ts"), e(" ", "M", "b.ts")], 0, 80, false);
   assertEquals(/\x1b\[\d+m/.test(out), false);

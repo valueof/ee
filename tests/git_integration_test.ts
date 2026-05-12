@@ -37,7 +37,7 @@ Deno.test("findRepoRoot: rejects when not in a repo", async () => {
   }
 });
 
-Deno.test("listChanges: returns staged + unstaged, skips untracked", async () => {
+Deno.test("listChanges: returns staged + unstaged + untracked, skips ignored", async () => {
   const dir = await setupRepo();
   try {
     await Deno.writeTextFile(`${dir}/committed.txt`, "v1\n");
@@ -48,10 +48,16 @@ Deno.test("listChanges: returns staged + unstaged, skips untracked", async () =>
     await Deno.writeTextFile(`${dir}/staged-new.txt`, "hi\n");
     await run(dir, "add", "staged-new.txt");
     await Deno.writeTextFile(`${dir}/untracked.txt`, "u\n");
+    await Deno.writeTextFile(`${dir}/.gitignore`, "ignored.log\n");
+    await Deno.writeTextFile(`${dir}/ignored.log`, "should be excluded\n");
 
     const entries = await listChanges(dir);
     const paths = entries.map((e) => e.path).sort();
-    assertEquals(paths, ["committed.txt", "staged-new.txt"]);
+    assertEquals(paths, [".gitignore", "committed.txt", "staged-new.txt", "untracked.txt"]);
+
+    const untracked = entries.find((e) => e.path === "untracked.txt")!;
+    assertEquals(untracked.indexStatus, "?");
+    assertEquals(untracked.worktreeStatus, "?");
   } finally {
     await Deno.remove(dir, { recursive: true });
   }

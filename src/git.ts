@@ -5,12 +5,13 @@ export type Entry = {
   renamedFrom?: string;
 };
 
-const TRACKED_CODES = new Set(["M", "A", "D", "R", "C", "T", "U"]);
+const EDITABLE_CODES = new Set(["M", "A", "D", "R", "C", "T", "U", "?"]);
 
-export function filterTracked(entries: Entry[]): Entry[] {
+export function filterEditable(entries: Entry[]): Entry[] {
   return entries.filter(
     (e) =>
-      TRACKED_CODES.has(e.indexStatus) || TRACKED_CODES.has(e.worktreeStatus),
+      EDITABLE_CODES.has(e.indexStatus) ||
+      EDITABLE_CODES.has(e.worktreeStatus),
   );
 }
 
@@ -43,7 +44,7 @@ export async function listChanges(repoRoot: string): Promise<Entry[]> {
       `git status failed: ${new TextDecoder().decode(stderr).trim()}`,
     );
   }
-  return filterTracked(parsePorcelain(stdout));
+  return filterEditable(parsePorcelain(stdout));
 }
 
 export function parsePorcelain(bytes: Uint8Array): Entry[] {

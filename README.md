@@ -1,8 +1,9 @@
 # ee
 
-A tiny TUI that lists tracked git changes and opens the selected file in
-your editor — replacing the `git status` + open-in-editor + find-file dance
-with one command.
+A tiny TUI that lists modified and untracked files in a git repo and opens
+the selected one in your editor — replacing the `git status` +
+open-in-editor + find-file dance with one command. Ignored files (per
+`.gitignore`) are excluded.
 
 ## Install
 
@@ -48,7 +49,9 @@ The compiled binary requires `--allow-run` unrestricted (rather than
 ## Manual smoke checklist
 
 - Empty state shows `Nothing to edit` and exits cleanly.
-- Mixed staged + unstaged + renamed + deleted files render correctly.
+- Mixed staged + unstaged + renamed + deleted + untracked files render correctly.
+- Untracked files show `??` in red and open as their existing content.
+- Files matched by `.gitignore` do NOT appear in the list.
 - Editor opens, edits saved, list refreshes after editor closes.
 - Committing all changes from inside the editor causes the next list to be empty.
 - Ctrl-C cleanly restores the terminal.

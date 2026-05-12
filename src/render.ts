@@ -13,6 +13,9 @@ function paint(code: string, s: string, enabled: boolean): string {
 function statusCell(entry: Entry, colorEnabled: boolean): string {
   const idx = entry.indexStatus;
   const wt = entry.worktreeStatus;
+  if (idx === "?" && wt === "?") {
+    return paint(FG_RED, "??", colorEnabled);
+  }
   if (idx !== " " && wt !== " ") {
     return paint(FG_YELLOW, idx + wt, colorEnabled);
   }

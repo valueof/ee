@@ -1,6 +1,11 @@
 package main
 
-import "bytes"
+import (
+	"bytes"
+	"fmt"
+	"os/exec"
+	"strings"
+)
 
 type Entry struct {
 	IndexStatus    byte
@@ -22,6 +27,18 @@ func filterEditable(entries []Entry) []Entry {
 		}
 	}
 	return out
+}
+
+func findRepoRoot(cwd string) (string, error) {
+	cmd := exec.Command("git", "rev-parse", "--show-toplevel")
+	cmd.Dir = cwd
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+	if err := cmd.Run(); err != nil {
+		return "", fmt.Errorf("not a git repository: %s", strings.TrimSpace(stderr.String()))
+	}
+	return strings.TrimRight(stdout.String(), "\n"), nil
 }
 
 func parsePorcelain(data []byte) []Entry {

@@ -7,16 +7,15 @@ open-in-editor + find-file dance with one command. Ignored files (per
 
 ## Install
 
-Requires [Deno](https://deno.com).
+Requires [Go](https://go.dev) 1.22 or newer.
 
 ```
 git clone <this repo>
 cd ee
-deno task install
+go build -o "$HOME/.local/bin/ee"
 ```
 
-This compiles a static binary to `$HOME/.local/bin/ee`. Make sure
-`~/.local/bin` is on your `PATH`.
+Make sure `~/.local/bin` is on your `PATH`.
 
 ## Usage
 
@@ -41,11 +40,6 @@ Environment:
 - `VISUAL` / `EDITOR` — editor command (VISUAL wins). Supports args, e.g. `EDITOR="nvim -p"`.
 - `NO_COLOR` — set to any value to disable colored output.
 
-## Permissions note
-
-The compiled binary requires `--allow-run` unrestricted (rather than
-`--allow-run=git,$EDITOR`) because `$EDITOR` is resolved at runtime.
-
 ## Manual smoke checklist
 
 - Empty state shows `Nothing to edit` and exits cleanly.
@@ -61,7 +55,7 @@ The compiled binary requires `--allow-run` unrestricted (rather than
 ## Development
 
 ```
-deno task test       # run all tests
-deno task dev        # run from source
-deno task build      # produce dist/ee
+go test ./...                # run all tests
+go run .                     # run from source
+go build -o ee               # produce ./ee
 ```

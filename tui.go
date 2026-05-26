@@ -1,5 +1,11 @@
 package main
 
+import (
+	"os"
+
+	"golang.org/x/term"
+)
+
 type KeyKind int
 
 const (
@@ -50,4 +56,65 @@ func parseKey(b []byte) Key {
 		return Key{Kind: KeyDigit, Value: int(b0 - '0')}
 	}
 	return Key{Kind: KeyChar, Char: b0}
+}
+
+const (
+	tuiEsc        = "\x1b"
+	tuiEnterAlt   = tuiEsc + "[?1049h"
+	tuiExitAlt    = tuiEsc + "[?1049l"
+	tuiHideCursor = tuiEsc + "[?25l"
+	tuiShowCursor = tuiEsc + "[?25h"
+	tuiClear      = tuiEsc + "[2J"
+	tuiHome       = tuiEsc + "[H"
+)
+
+var (
+	rawEntered bool
+	oldState   *term.State
+)
+
+func tuiEnter() error {
+	if rawEntered {
+		return nil
+	}
+	st, err := term.MakeRaw(int(os.Stdin.Fd()))
+	if err != nil {
+		return err
+	}
+	oldState = st
+	_, _ = os.Stdout.WriteString(tuiEnterAlt + tuiHideCursor)
+	rawEntered = true
+	return nil
+}
+
+func tuiExit() {
+	if !rawEntered {
+		return
+	}
+	_, _ = os.Stdout.WriteString(tuiShowCursor + tuiExitAlt)
+	if oldState != nil {
+		_ = term.Restore(int(os.Stdin.Fd()), oldState)
+	}
+	rawEntered = false
+}
+
+func tuiRender(s string) {
+	_, _ = os.Stdout.WriteString(tuiHome + tuiClear + s)
+}
+
+func terminalWidth() int {
+	w, _, err := term.GetSize(int(os.Stdout.Fd()))
+	if err != nil {
+		return 80
+	}
+	return w
+}
+
+func readKey() Key {
+	buf := make([]byte, 8)
+	n, err := os.Stdin.Read(buf)
+	if err != nil || n == 0 {
+		return Key{Kind: KeyQuit}
+	}
+	return parseKey(buf[:n])
 }

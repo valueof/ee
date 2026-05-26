@@ -41,6 +41,18 @@ func findRepoRoot(cwd string) (string, error) {
 	return strings.TrimRight(stdout.String(), "\n"), nil
 }
 
+func listChanges(repoRoot string) ([]Entry, error) {
+	cmd := exec.Command("git", "status", "--porcelain=v1", "-z")
+	cmd.Dir = repoRoot
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+	if err := cmd.Run(); err != nil {
+		return nil, fmt.Errorf("git status failed: %s", strings.TrimSpace(stderr.String()))
+	}
+	return filterEditable(parsePorcelain(stdout.Bytes())), nil
+}
+
 func parsePorcelain(data []byte) []Entry {
 	if len(data) == 0 {
 		return nil

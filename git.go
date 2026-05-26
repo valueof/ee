@@ -9,6 +9,21 @@ type Entry struct {
 	RenamedFrom    string
 }
 
+var editableCodes = map[byte]bool{
+	'M': true, 'A': true, 'D': true, 'R': true,
+	'C': true, 'T': true, 'U': true, '?': true,
+}
+
+func filterEditable(entries []Entry) []Entry {
+	out := make([]Entry, 0, len(entries))
+	for _, e := range entries {
+		if editableCodes[e.IndexStatus] || editableCodes[e.WorktreeStatus] {
+			out = append(out, e)
+		}
+	}
+	return out
+}
+
 func parsePorcelain(data []byte) []Entry {
 	if len(data) == 0 {
 		return nil

@@ -79,3 +79,38 @@ func TestParsePorcelain_RenameFollowedByAnotherEntry(t *testing.T) {
 		t.Fatalf("got %#v, want %#v", got, want)
 	}
 }
+
+func TestFilterEditable_KeepsUntracked(t *testing.T) {
+	in := parsePorcelain([]byte("?? new.txt\x00 M tracked.ts\x00"))
+	got := filterEditable(in)
+	want := []Entry{
+		{IndexStatus: '?', WorktreeStatus: '?', Path: "new.txt"},
+		{IndexStatus: ' ', WorktreeStatus: 'M', Path: "tracked.ts"},
+	}
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("got %#v, want %#v", got, want)
+	}
+}
+
+func TestFilterEditable_DropsIgnored(t *testing.T) {
+	in := parsePorcelain([]byte("!! ignored.log\x00M  staged.ts\x00"))
+	got := filterEditable(in)
+	want := []Entry{{IndexStatus: 'M', WorktreeStatus: ' ', Path: "staged.ts"}}
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("got %#v, want %#v", got, want)
+	}
+}
+
+func TestFilterEditable_KeepsEveryEditableCode(t *testing.T) {
+	codes := []byte{'M', 'A', 'D', 'R', 'C', 'T', 'U', '?'}
+	for _, c := range codes {
+		got := filterEditable([]Entry{{IndexStatus: c, WorktreeStatus: ' ', Path: "x"}})
+		if len(got) != 1 {
+			t.Fatalf("dropped index=%c", c)
+		}
+		got = filterEditable([]Entry{{IndexStatus: ' ', WorktreeStatus: c, Path: "x"}})
+		if len(got) != 1 {
+			t.Fatalf("dropped worktree=%c", c)
+		}
+	}
+}

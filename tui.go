@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"strings"
 
 	"golang.org/x/term"
 )
@@ -99,7 +100,9 @@ func tuiExit() {
 }
 
 func tuiRender(s string) {
-	_, _ = os.Stdout.WriteString(tuiHome + tuiClear + s)
+	// Raw mode clears OPOST, so LF no longer expands to CRLF. Emit CRLF so each
+	// rendered line returns to column 1 instead of stair-stepping right.
+	_, _ = os.Stdout.WriteString(tuiHome + tuiClear + strings.ReplaceAll(s, "\n", "\r\n"))
 }
 
 func terminalWidth() int {

@@ -51,9 +51,9 @@ func truncate(s string, max int) string {
 	return string(runes[:max-1]) + "…"
 }
 
-func renderFrame(entries []Entry, cursor int, width int, color bool) string {
+func renderFrame(entries []Entry, cursor int, width int, color bool, header string) string {
 	var b strings.Builder
-	fmt.Fprintf(&b, "modified files (%d)\n\n", len(entries))
+	fmt.Fprintf(&b, "%s (%d)\n\n", header, len(entries))
 
 	// prefixCols: 2 (cursor) + 3 (badge) + 1 (space) + 2 (status) + 1 (space) = 9
 	const prefixCols = 9

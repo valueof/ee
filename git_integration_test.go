@@ -62,7 +62,7 @@ func TestFindRepoRoot_RejectsNonRepo(t *testing.T) {
 	}
 }
 
-func TestListChanges_StagedUnstagedUntrackedSkipsIgnored(t *testing.T) {
+func TestLoadStatus_StagedUnstagedUntrackedSkipsIgnored(t *testing.T) {
 	dir := setupRepo(t)
 
 	mustWrite := func(rel, content string) {
@@ -83,10 +83,11 @@ func TestListChanges_StagedUnstagedUntrackedSkipsIgnored(t *testing.T) {
 	mustWrite(".gitignore", "ignored.log\n")
 	mustWrite("ignored.log", "should be excluded\n")
 
-	entries, err := listChanges(dir)
+	raw, err := loadStatus(dir)
 	if err != nil {
 		t.Fatal(err)
 	}
+	entries := filterEditable(raw)
 
 	var paths []string
 	for _, e := range entries {

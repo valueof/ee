@@ -19,14 +19,14 @@ const (
 )
 
 func TestRenderFrame_HeaderShowsCount(t *testing.T) {
-	out := renderFrame([]Entry{entry(' ', 'M', "a.ts"), entry('M', ' ', "b.ts")}, 0, 80, false)
+	out := renderFrame([]Entry{entry(' ', 'M', "a.ts"), entry('M', ' ', "b.ts")}, 0, 80, false, "modified files")
 	if !strings.Contains(out, "modified files (2)") {
 		t.Fatalf("missing header in %q", out)
 	}
 }
 
 func TestRenderFrame_CursorRowPrefix(t *testing.T) {
-	out := renderFrame([]Entry{entry(' ', 'M', "a.ts"), entry(' ', 'M', "b.ts")}, 1, 80, false)
+	out := renderFrame([]Entry{entry(' ', 'M', "a.ts"), entry(' ', 'M', "b.ts")}, 1, 80, false, "modified files")
 	re := regexp.MustCompile(`(?m)^[ >] {1,2}\[`)
 	matches := re.FindAllString(out, -1)
 	if len(matches) != 2 {
@@ -52,7 +52,7 @@ func TestRenderFrame_NumericBadges(t *testing.T) {
 	for i := range entries {
 		entries[i] = entry(' ', 'M', "f.ts")
 	}
-	out := renderFrame(entries, 0, 80, false)
+	out := renderFrame(entries, 0, 80, false, "modified files")
 	for _, want := range []string{"[1]", "[9]", "[ ] "} {
 		if !strings.Contains(out, want) {
 			t.Fatalf("missing %q in %q", want, out)
@@ -61,7 +61,7 @@ func TestRenderFrame_NumericBadges(t *testing.T) {
 }
 
 func TestRenderFrame_EmptyList(t *testing.T) {
-	out := renderFrame(nil, 0, 80, false)
+	out := renderFrame(nil, 0, 80, false, "modified files")
 	if !strings.Contains(out, "modified files (0)") {
 		t.Fatalf("missing header in %q", out)
 	}
@@ -71,7 +71,7 @@ func TestRenderFrame_EmptyList(t *testing.T) {
 }
 
 func TestRenderFrame_Footer(t *testing.T) {
-	out := renderFrame([]Entry{entry(' ', 'M', "a.ts")}, 0, 80, false)
+	out := renderFrame([]Entry{entry(' ', 'M', "a.ts")}, 0, 80, false, "modified files")
 	for _, want := range []string{"↑/↓ or j/k", "q quit"} {
 		if !strings.Contains(out, want) {
 			t.Fatalf("missing %q in %q", want, out)
@@ -80,28 +80,28 @@ func TestRenderFrame_Footer(t *testing.T) {
 }
 
 func TestRenderFrame_StagedGreen(t *testing.T) {
-	out := renderFrame([]Entry{entry('M', ' ', "a.ts")}, 0, 80, true)
+	out := renderFrame([]Entry{entry('M', ' ', "a.ts")}, 0, 80, true, "modified files")
 	if !strings.Contains(out, fgGreen+"M"+reset) {
 		t.Fatalf("missing green M in %q", out)
 	}
 }
 
 func TestRenderFrame_UnstagedRed(t *testing.T) {
-	out := renderFrame([]Entry{entry(' ', 'M', "a.ts")}, 0, 80, true)
+	out := renderFrame([]Entry{entry(' ', 'M', "a.ts")}, 0, 80, true, "modified files")
 	if !strings.Contains(out, fgRed+"M"+reset) {
 		t.Fatalf("missing red M in %q", out)
 	}
 }
 
 func TestRenderFrame_BothYellow(t *testing.T) {
-	out := renderFrame([]Entry{entry('M', 'M', "a.ts")}, 0, 80, true)
+	out := renderFrame([]Entry{entry('M', 'M', "a.ts")}, 0, 80, true, "modified files")
 	if !strings.Contains(out, fgYellow+"MM"+reset) {
 		t.Fatalf("missing yellow MM in %q", out)
 	}
 }
 
 func TestRenderFrame_UntrackedRed(t *testing.T) {
-	out := renderFrame([]Entry{entry('?', '?', "new.txt")}, 0, 80, true)
+	out := renderFrame([]Entry{entry('?', '?', "new.txt")}, 0, 80, true, "modified files")
 	if !strings.Contains(out, fgRed+"??"+reset) {
 		t.Fatalf("missing red ?? in %q", out)
 	}
@@ -110,7 +110,7 @@ func TestRenderFrame_UntrackedRed(t *testing.T) {
 func TestRenderFrame_NoEscapesWhenColorDisabled(t *testing.T) {
 	out := renderFrame(
 		[]Entry{entry('M', 'M', "a.ts"), entry(' ', 'M', "b.ts")},
-		0, 80, false,
+		0, 80, false, "modified files",
 	)
 	if regexp.MustCompile(`\x1b\[\d+m`).MatchString(out) {
 		t.Fatalf("found SGR escape in colorless output %q", out)
@@ -119,7 +119,7 @@ func TestRenderFrame_NoEscapesWhenColorDisabled(t *testing.T) {
 
 func TestRenderFrame_LongPathTruncated(t *testing.T) {
 	long := "a/very/deeply/nested/file/path/that/is/quite/long.ts"
-	out := renderFrame([]Entry{entry(' ', 'M', long)}, 0, 30, false)
+	out := renderFrame([]Entry{entry(' ', 'M', long)}, 0, 30, false, "modified files")
 	var line string
 	for _, l := range strings.Split(out, "\n") {
 		if strings.Contains(l, "[1]") {
@@ -136,7 +136,7 @@ func TestRenderFrame_LongPathTruncated(t *testing.T) {
 }
 
 func TestRenderFrame_ShortPathNotTruncated(t *testing.T) {
-	out := renderFrame([]Entry{entry(' ', 'M', "x.ts")}, 0, 30, false)
+	out := renderFrame([]Entry{entry(' ', 'M', "x.ts")}, 0, 30, false, "modified files")
 	var line string
 	for _, l := range strings.Split(out, "\n") {
 		if strings.Contains(l, "[1]") {
@@ -149,5 +149,15 @@ func TestRenderFrame_ShortPathNotTruncated(t *testing.T) {
 	}
 	if !strings.Contains(line, "x.ts") {
 		t.Fatalf("line %q missing path", line)
+	}
+}
+
+func TestRenderFrame_StdinHeader(t *testing.T) {
+	out := renderFrame([]Entry{entry(' ', 'M', "a.ts")}, 0, 80, false, "files")
+	if !strings.Contains(out, "files (1)") {
+		t.Fatalf("missing stdin header in %q", out)
+	}
+	if strings.Contains(out, "modified files") {
+		t.Fatalf("stdin mode must not say 'modified files' in %q", out)
 	}
 }

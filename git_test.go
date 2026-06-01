@@ -101,6 +101,33 @@ func TestFilterEditable_DropsIgnored(t *testing.T) {
 	}
 }
 
+func TestStatusMapFrom_KeysByPath(t *testing.T) {
+	entries := []Entry{
+		{IndexStatus: ' ', WorktreeStatus: 'M', Path: "a.ts"},
+		{IndexStatus: 'M', WorktreeStatus: ' ', Path: "b.ts"},
+	}
+	got := statusMapFrom(entries)
+	if len(got) != 2 {
+		t.Fatalf("len = %d, want 2", len(got))
+	}
+	if got["a.ts"].WorktreeStatus != 'M' {
+		t.Fatalf("a.ts: %+v", got["a.ts"])
+	}
+	if got["b.ts"].IndexStatus != 'M' {
+		t.Fatalf("b.ts: %+v", got["b.ts"])
+	}
+}
+
+func TestStatusMapFrom_EmptyInput(t *testing.T) {
+	got := statusMapFrom(nil)
+	if got == nil {
+		t.Fatalf("want non-nil empty map")
+	}
+	if len(got) != 0 {
+		t.Fatalf("len = %d, want 0", len(got))
+	}
+}
+
 func TestFilterEditable_KeepsEveryEditableCode(t *testing.T) {
 	codes := []byte{'M', 'A', 'D', 'R', 'C', 'T', 'U', '?'}
 	for _, c := range codes {

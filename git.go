@@ -41,7 +41,7 @@ func findRepoRoot(cwd string) (string, error) {
 	return strings.TrimRight(stdout.String(), "\n"), nil
 }
 
-func listChanges(repoRoot string) ([]Entry, error) {
+func loadStatus(repoRoot string) ([]Entry, error) {
 	cmd := exec.Command("git", "status", "--porcelain=v1", "-z")
 	cmd.Dir = repoRoot
 	var stdout, stderr bytes.Buffer
@@ -50,7 +50,15 @@ func listChanges(repoRoot string) ([]Entry, error) {
 	if err := cmd.Run(); err != nil {
 		return nil, fmt.Errorf("git status failed: %s", strings.TrimSpace(stderr.String()))
 	}
-	return filterEditable(parsePorcelain(stdout.Bytes())), nil
+	return parsePorcelain(stdout.Bytes()), nil
+}
+
+func statusMapFrom(entries []Entry) map[string]Entry {
+	out := make(map[string]Entry, len(entries))
+	for _, e := range entries {
+		out[e.Path] = e
+	}
+	return out
 }
 
 func parsePorcelain(data []byte) []Entry {

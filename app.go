@@ -3,9 +3,11 @@ package main
 import "os"
 
 type state struct {
-	repoRoot string
-	entries  []Entry
-	cursor   int
+	repoRoot    string
+	entries     []Entry
+	cursor      int
+	header      string
+	loadEntries func() ([]Entry, error)
 }
 
 func colorEnabled() bool {
@@ -49,7 +51,7 @@ func openSelected(s state) (state, error) {
 	if err := runEditor(editor, full); err != nil {
 		return s, err
 	}
-	next, err := listChanges(s.repoRoot)
+	next, err := s.loadEntries()
 	if err != nil {
 		return s, err
 	}
@@ -58,8 +60,14 @@ func openSelected(s state) (state, error) {
 	return s, nil
 }
 
-func appRun(repoRoot string, initial []Entry) error {
-	s := state{repoRoot: repoRoot, entries: initial, cursor: 0}
+func appRun(repoRoot string, initial []Entry, loadEntries func() ([]Entry, error), header string) error {
+	s := state{
+		repoRoot:    repoRoot,
+		entries:     initial,
+		cursor:      0,
+		header:      header,
+		loadEntries: loadEntries,
+	}
 	color := colorEnabled()
 
 	for {
@@ -69,7 +77,7 @@ func appRun(repoRoot string, initial []Entry) error {
 			return nil
 		}
 
-		tuiRender(renderFrame(s.entries, s.cursor, terminalWidth(), color))
+		tuiRender(renderFrame(s.entries, s.cursor, terminalWidth(), color, s.header))
 
 		key := readKey()
 		switch key.Kind {

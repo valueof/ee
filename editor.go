@@ -29,7 +29,7 @@ func runEditor(editorCmd, filePath string) error {
 	defer func() { _ = tuiEnter() }()
 
 	cmd := exec.Command(bin, args...)
-	cmd.Stdin = os.Stdin
+	cmd.Stdin = tuiChildStdin()
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	return cmd.Run()

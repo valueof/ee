@@ -70,15 +70,24 @@ const (
 )
 
 var (
+	tuiInput   *os.File = os.Stdin
 	rawEntered bool
 	oldState   *term.State
 )
+
+func tuiUseInput(f *os.File) {
+	tuiInput = f
+}
+
+func tuiChildStdin() *os.File {
+	return tuiInput
+}
 
 func tuiEnter() error {
 	if rawEntered {
 		return nil
 	}
-	st, err := term.MakeRaw(int(os.Stdin.Fd()))
+	st, err := term.MakeRaw(int(tuiInput.Fd()))
 	if err != nil {
 		return err
 	}
@@ -94,7 +103,7 @@ func tuiExit() {
 	}
 	_, _ = os.Stdout.WriteString(tuiShowCursor + tuiExitAlt)
 	if oldState != nil {
-		_ = term.Restore(int(os.Stdin.Fd()), oldState)
+		_ = term.Restore(int(tuiInput.Fd()), oldState)
 	}
 	rawEntered = false
 }
@@ -115,7 +124,7 @@ func terminalWidth() int {
 
 func readKey() Key {
 	buf := make([]byte, 8)
-	n, err := os.Stdin.Read(buf)
+	n, err := tuiInput.Read(buf)
 	if err != nil || n == 0 {
 		return Key{Kind: KeyQuit}
 	}

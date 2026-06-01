@@ -16,6 +16,19 @@ make install
 
 Make sure `~/.local/bin` is on your `PATH`.
 
+## Stdin mode
+
+If you pipe input, `ee` reads file paths (one per line) from stdin instead
+of running `git status`. Paths outside the repo or that don't exist are
+skipped. The status column reflects current git status for the piped paths
+(blank if the file is tracked and clean).
+
+```
+rg -l TODO | ee
+git diff --name-only main...HEAD | ee
+find . -name '*.ts' | ee
+```
+
 # Environment:
 
 - `VISUAL` / `EDITOR` — editor command (VISUAL wins). Supports args, e.g. `EDITOR="nvim -p"`.
